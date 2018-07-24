@@ -80,6 +80,19 @@ public class StateStore {
 	}
 
 	/**
+	 * Sets a 'map' value
+	 * 
+	 * @param name
+	 *                  name of entry
+	 * @param value
+	 *                  map of state entry
+	 */
+	public synchronized void set(String name, Map<?, ?> value) {
+		_map.put(name, value);
+		updateCount++;
+	}
+
+	/**
 	 * Add a message list. It uses a hashset to avoid sending duplicate messages.
 	 * 
 	 * @param event
@@ -98,31 +111,57 @@ public class StateStore {
 	}
 
 	/**
-	 * Retrieves current state's json, resets updates counter and any entry list.
+	 * Retrieves current state's json, resets updates counter and any entry list or
+	 * map.
 	 * 
 	 * @return json document of current state
+	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
-	public synchronized String getState() {
+	public synchronized String getState() throws InvalidDataTypeException {
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("{\"updates\":").append(updateCount);
-		for (String key : _map.keySet()) {
-			sb.append(",\"").append(key).append("\":");
-			Object value = _map.get(key);
-			if (value instanceof HashSet<?>) {
+		_map.put("updates", updateCount);
+		mapToJson(sb, _map);
+		updateCount = 0;
+		return sb.toString();
+	}
+
+	/**
+	 * 
+	 * @param map
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	private void mapToJson(StringBuilder sb, Map<String, Object> map) throws InvalidDataTypeException {
+		sb.append("{");
+		boolean first = true;
+		for (String key : map.keySet()) {
+			sb.append(first ? "" : ",").append('\"').append(key).append("\":");
+			Object value = map.get(key);
+			if (Map.class.isInstance(value)) {
+				Map<String, Object> innerMap = (Map<String, Object>) value;
+				mapToJson(sb, innerMap);
+				innerMap.clear();
+
+			} else if (Set.class.isInstance(value)) {
 				Set<String> events = (Set<String>) value;
 				sb.append("[\"").append(events.stream().collect(Collectors.joining("\",\""))).append("\"]");
 				events.clear();
 
 			} else if (value instanceof String) {
 				sb.append("\"").append(value).append("\"");
-			} else {
+
+			} else if (value instanceof Double || value instanceof Long || value instanceof Integer) {
 				sb.append(value);
+
+			} else {
+				throw new InvalidDataTypeException(
+						String.format("Attribute '%s' is a %s: should be Map, Set, String, Integer, Long or Double.",
+								key, value.getClass().getSimpleName()));
 			}
+			first = false;
 		}
 		sb.append("}");
-		updateCount = 0;
-		return sb.toString();
 	}
 }

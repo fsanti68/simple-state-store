@@ -1,5 +1,8 @@
 package com.logicalis.la.state;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 
  * Exemplo de uso
@@ -16,9 +19,11 @@ public class Main {
 			@Override
 			public void run() {
 				while (true) {
-					StateStore.getInstance().set("coord.lat", Math.random() * -100);
-					StateStore.getInstance().set("coord.lng", Math.random() * -100);
-					StateStore.getInstance().set("coord.alt", Math.random() * 300);
+					Map<String, Double> coords = new HashMap<>();
+					coords.put("lat", Math.random() * -100);
+					coords.put("lng", Math.random() * -100);
+					coords.put("alt", Math.random() * 300);
+					StateStore.getInstance().set("coord", coords);
 					sleep(5);
 				}
 			}
@@ -30,7 +35,7 @@ public class Main {
 			@Override
 			public void run() {
 				while (true) {
-					double battery = Math.random() * 100;
+					Double battery = Math.random() * 100;
 					StateStore.getInstance().set("battery", battery);
 					sleep(10);
 				}
@@ -44,7 +49,7 @@ public class Main {
 			@Override
 			public void run() {
 				while (true) {
-					String event = "Random event #" + new Double((Math.random() * 20)).shortValue();
+					String event = "random event #" + new Double((Math.random() * 20)).shortValue();
 					StateStore.getInstance().add("event", event);
 					sleep(50);
 				}
@@ -62,7 +67,12 @@ public class Main {
 			@Override
 			public void run() {
 				while (true) {
-					System.out.println(StateStore.getInstance().getState());
+					try {
+						System.out.println(StateStore.getInstance().getState());
+					} catch (InvalidDataTypeException e) {
+						System.err.println("Invalid data type: " + e.getMessage());
+						e.printStackTrace();
+					}
 					sleep(1000L);
 				}
 			}
