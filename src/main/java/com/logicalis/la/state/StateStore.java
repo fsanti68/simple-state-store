@@ -97,7 +97,7 @@ public class StateStore {
 	 * @param value
 	 *                  map of state entry
 	 */
-	public synchronized void set(String name, Map<?, ?> value) {
+	public synchronized void set(String name, Map<String, ?> value) {
 		_map.put(name, value);
 		updateCount++;
 	}
@@ -137,9 +137,11 @@ public class StateStore {
 	}
 
 	/**
+	 * Converts a map to a json string.
 	 * 
 	 * @param map
-	 * @return
+	 *                map to convert
+	 * @return json string
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
@@ -168,8 +170,8 @@ public class StateStore {
 			} else {
 				// limiting data types to avoid more complex marshallers, like ObjectMappers
 				throw new InvalidDataTypeException(
-						String.format("Attribute '%s' is a %s: should be Map, Set, String, Integer, Long or Double.",
-								key, value.getClass().getSimpleName()));
+						String.format("Attribute '%s' is a %s: should be Map, Set, String, Long or Double.", key,
+								value.getClass().getSimpleName()));
 			}
 			first = false;
 		}
