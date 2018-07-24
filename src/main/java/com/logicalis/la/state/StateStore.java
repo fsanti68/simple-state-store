@@ -125,7 +125,9 @@ public class StateStore {
 	 * map.
 	 * 
 	 * @return json document of current state
-	 * @throws Exception
+	 * @throws InvalidDataTypeException
+	 *                                      in case an inner map has any invalid
+	 *                                      entry class.
 	 */
 	public synchronized String getState() throws InvalidDataTypeException {
 
@@ -142,7 +144,9 @@ public class StateStore {
 	 * @param map
 	 *                map to convert
 	 * @return json string
-	 * @throws Exception
+	 * @throws InvalidDataTypeException
+	 *                                      in case an inner map has any invalid
+	 *                                      entry class.
 	 */
 	@SuppressWarnings("unchecked")
 	private void mapToJson(StringBuilder sb, Map<String, Object> map) throws InvalidDataTypeException {
@@ -164,7 +168,7 @@ public class StateStore {
 			} else if (value instanceof String) {
 				sb.append("\"").append(value).append("\"");
 
-			} else if (value instanceof Double || value instanceof Long || value instanceof Integer) {
+			} else if (value instanceof Double || value instanceof Long) {
 				sb.append(value);
 
 			} else {
