@@ -132,7 +132,7 @@ public class StateStore {
 	public synchronized String getState() throws InvalidDataTypeException {
 
 		StringBuilder sb = new StringBuilder();
-		_map.put("_updates", updateCount);
+		_map.put("_updates", new Long(updateCount));
 		mapToJson(sb, _map);
 		updateCount = 0;
 		return sb.toString();
