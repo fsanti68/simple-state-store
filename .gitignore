@@ -21,3 +21,29 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# maven's garbage
+antlr
+avalon-framework
+classworlds
+com
+commons-beanutils
+commons-chain
+commons-codec
+commons-collections
+commons-digester
+commons-io
+commons-lang
+commons-logging
+commons-validator
+dom4j
+javax
+junit
+log4j
+logkit
+org
+oro
+sslext
+target
+xml-apis
+xmlunit
