@@ -1,7 +1,9 @@
 package com.logicalis.la.state;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.TreeMap;
 
 /**
  * 
@@ -10,39 +12,49 @@ import java.util.Map;
  */
 public class Main {
 
+	static double batteryLevel = 100.0;
+
+	// Campinas, Parque Rural Fazenda Santa Cândida
+	static double lat = -22.842830;
+	static double lng = -47.035735;
+	static double alt = 300.0;
+
 	public Main() {
 
-		// simula a geração de 200 chamadas /segundo ao callback de atualização de
-		// coordenadas
+		// simula a geração de aprox. 200 chamadas/segundo ao callback de atualização
+		// de coordenadas
 		Thread populateCoordinates = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				while (true) {
-					Map<String, Double> coords = new HashMap<>();
-					coords.put("lat", Math.random() * -100);
-					coords.put("lng", Math.random() * -100);
-					coords.put("alt", Math.random() * 300);
+					Map<String, Double> coords = new TreeMap<>();
+					lat += Math.random() * 0.0001;
+					lng += Math.random() * 0.0001;
+					alt += -0.001 + (Math.random() * 0.002);
+					coords.put("lat", lat);
+					coords.put("lng", lng);
+					coords.put("alt", alt);
 					StateStore.getInstance().set("coord", coords);
-					sleep(5);
+					sleep(4);
 				}
 			}
 		});
 
-		// simula a geração de 100 chamadas /segundo ao callback de atualização de
-		// nível de bateria
+		// simula a geração de aprox. 100 chamadas/segundo ao callback de atualização
+		// de nível de bateria
 		Thread populateBattery = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				while (true) {
-					Double battery = Math.random() * 100;
-					StateStore.getInstance().set("battery", battery);
-					sleep(10);
+					StateStore.getInstance().set("battery", batteryLevel);
+					batteryLevel -= 0.00001;
+					sleep(9);
 				}
 			}
 		});
 
-		// simula a geração de 20 chamadas / segundo ao callback de atualização de
+		// simula a geração de 20 chamadas/segundo ao callback de atualização de
 		// notificações / eventos
 		Thread populateEvents = new Thread(new Runnable() {
 
@@ -51,37 +63,30 @@ public class Main {
 				while (true) {
 					String event = "random event #" + new Double((Math.random() * 20)).shortValue();
 					StateStore.getInstance().add("event", event);
-					sleep(50);
+					sleep(45);
 				}
 			}
 		});
 
-		// Dispara as thread de simulação dos callbacks
+		// Dispara as threads de simulação dos callbacks
 		populateCoordinates.start();
 		populateBattery.start();
 		populateEvents.start();
 
-		// Thread que emite o estado a cada 1 segundo
-		Thread sendState = new Thread(new Runnable() {
+		// Busca o estado atualizado a cada 1 segundo
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
 
 			@Override
 			public void run() {
-				while (true) {
-					try {
-						System.out.println(StateStore.getInstance().getState());
-					} catch (InvalidDataTypeException e) {
-						System.err.println("Invalid data type: " + e.getMessage());
-						e.printStackTrace();
-					}
-					sleep(1000L);
+				try {
+					System.out.println(StateStore.getInstance().getState());
+				} catch (InvalidDataTypeException e) {
+					System.err.println("Invalid data type: " + e.getMessage());
+					e.printStackTrace();
 				}
 			}
-		});
-
-		sleep(2000L);
-
-		// Dispara a thread de atualização do estado (por ex. de envio para o front-end
-		sendState.start();
+		}, 0L, 1000L);
 	}
 
 	private void sleep(long ms) {

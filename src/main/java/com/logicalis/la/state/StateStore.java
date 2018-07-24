@@ -8,8 +8,18 @@ import java.util.stream.Collectors;
 
 /**
  * 
- * Simple State Store
- *
+ * A Simple State Store.
+ * <p>
+ * State attributes as kept in a Map and can be String, Integer, Long, Double,
+ * Set or Map. Inner maps also are restricted to those data types.
+ * </p>
+ * <p>
+ * All getters and setters are <i>synchronized</i> to avoid concurrency
+ * exceptions. Since writes are expected to be much more frequent than reads,
+ * read and write locks are pretty useless (like ReentrantReadWriteLock). In
+ * current Java VM, <i>synchronized</i> methods for this scenario are almost as
+ * fast as the new Java8 StampedLock. So ...
+ * </p>
  */
 public class StateStore {
 
@@ -26,7 +36,7 @@ public class StateStore {
 	 * 
 	 */
 	private StateStore() {
-		// ordered map
+		// ordered map (because we like ordered attributes)
 		_map = new TreeMap<>();
 	}
 
@@ -120,7 +130,7 @@ public class StateStore {
 	public synchronized String getState() throws InvalidDataTypeException {
 
 		StringBuilder sb = new StringBuilder();
-		_map.put("updates", updateCount);
+		_map.put("_updates", updateCount);
 		mapToJson(sb, _map);
 		updateCount = 0;
 		return sb.toString();
@@ -156,6 +166,7 @@ public class StateStore {
 				sb.append(value);
 
 			} else {
+				// limiting data types to avoid more complex marshallers, like ObjectMappers
 				throw new InvalidDataTypeException(
 						String.format("Attribute '%s' is a %s: should be Map, Set, String, Integer, Long or Double.",
 								key, value.getClass().getSimpleName()));
