@@ -38,7 +38,7 @@ public class Main {
 		});
 
 		// simula a geração de 20 chamadas / segundo ao callback de atualização de
-		// coordenadas
+		// notificações / eventos
 		Thread populateEvents = new Thread(new Runnable() {
 
 			@Override
