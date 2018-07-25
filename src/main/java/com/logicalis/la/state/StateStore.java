@@ -137,9 +137,9 @@ public class StateStore {
 			events = new ArrayList<>();
 		List<String> list = (List<String>) events;
 		// append only if last element differs
-		if (!list.isEmpty() && !list.get(list.size() - 1).equals(message))
+		if (list.isEmpty() || !list.get(list.size() - 1).equals(message))
 			list.add(message);
-		_map.put(event, events);
+		_map.put(event, list);
 		updateCount++;
 	}
 
