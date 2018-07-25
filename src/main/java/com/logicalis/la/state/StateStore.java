@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * 
  * A Simple State Store.
  * <p>
- * State attributes as kept in a Map and can be String, Integer, Long, Double,
+ * State attributes are kept in a Map and can be String, Integer, Long, Double,
  * Set or Map. Inner maps also are restricted to those data types.
  * </p>
  * <p>
