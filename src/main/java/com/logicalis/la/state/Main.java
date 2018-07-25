@@ -56,14 +56,30 @@ public class Main {
 
 		// simula a geração de 20 chamadas/segundo ao callback de atualização de
 		// notificações / eventos
-		Thread populateEvents = new Thread(new Runnable() {
+		Thread populateMessages = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				while (true) {
 					String event = "random event #" + new Double((Math.random() * 20)).shortValue();
-					StateStore.getInstance().add("event", event);
+					StateStore.getInstance().addToSet("event", event);
 					sleep(45);
+				}
+			}
+		});
+
+		// simula a geração de 2 chamadas/segundo ao callback de atualização de
+		// notificações / eventos
+		Thread populateEvents = new Thread(new Runnable() {
+			
+			private int id = 0;
+
+			@Override
+			public void run() {
+				while (true) {
+					String event = "mission event #" + ++id;
+					StateStore.getInstance().addToList("mission", event);
+					sleep(500 + ((long) Math.random() * 600000));
 				}
 			}
 		});
@@ -71,6 +87,7 @@ public class Main {
 		// Dispara as threads de simulação dos callbacks
 		populateCoordinates.start();
 		populateBattery.start();
+		populateMessages.start();
 		populateEvents.start();
 
 		// Busca o estado atualizado a cada 1 segundo

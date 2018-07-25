@@ -1,6 +1,8 @@
 package com.logicalis.la.state;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -103,21 +105,52 @@ public class StateStore {
 	}
 
 	/**
-	 * Add a message list. It uses a hashset to avoid sending duplicate messages.
+	 * Add a message to a set (avoid duplicates).
 	 * 
 	 * @param event
 	 *                    name of entries list
 	 * @param message
-	 *                    message to append to state entry
+	 *                    message to be appended to state entry
 	 */
 	@SuppressWarnings("unchecked")
-	public synchronized void add(String event, String message) {
+	public synchronized void addToSet(String event, String message) {
 		Object events = _map.get(event);
 		if (events == null || !(events instanceof HashSet<?>))
 			events = new HashSet<>();
 		((Set<String>) events).add(message);
 		_map.put(event, events);
 		updateCount++;
+	}
+
+	/**
+	 * Add a message to a list. It uses an arraylist to keep insertion order.
+	 * 
+	 * @param event
+	 *                    name of entries list
+	 * @param message
+	 *                    message to be appended to state entry
+	 */
+	@SuppressWarnings("unchecked")
+	public synchronized void addToList(String event, String message) {
+		Object events = _map.get(event);
+		if (events == null || !(events instanceof ArrayList<?>))
+			events = new ArrayList<>();
+		List<String> list = (List<String>) events;
+		// append only if last element differs
+		if (!list.isEmpty() && !list.get(list.size() - 1).equals(message))
+			list.add(message);
+		_map.put(event, events);
+		updateCount++;
+	}
+
+	/**
+	 * Removes an entry from state.
+	 * 
+	 * @param name
+	 *                 entry key to be removed.
+	 */
+	public synchronized void remove(String name) {
+		_map.remove(name);
 	}
 
 	/**
@@ -162,7 +195,18 @@ public class StateStore {
 
 			} else if (Set.class.isInstance(value)) {
 				Set<String> events = (Set<String>) value;
-				sb.append("[\"").append(events.stream().collect(Collectors.joining("\",\""))).append("\"]");
+				if (events.isEmpty())
+					sb.append("[]");
+				else
+					sb.append("[\"").append(events.stream().collect(Collectors.joining("\",\""))).append("\"]");
+				events.clear();
+
+			} else if (List.class.isInstance(value)) {
+				List<String> events = (List<String>) value;
+				if (events.isEmpty())
+					sb.append("[]");
+				else
+					sb.append("[\"").append(events.stream().collect(Collectors.joining("\",\""))).append("\"]");
 				events.clear();
 
 			} else if (value instanceof String) {
@@ -174,7 +218,7 @@ public class StateStore {
 			} else {
 				// limiting data types to avoid more complex marshallers, like ObjectMappers
 				throw new InvalidDataTypeException(
-						String.format("Attribute '%s' is a %s: should be Map, Set, String, Long or Double.", key,
+						String.format("Attribute '%s' is a %s: should be Map, List, Set, String, Long or Double.", key,
 								value.getClass().getSimpleName()));
 			}
 			first = false;
