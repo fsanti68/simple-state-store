@@ -6,12 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 class StateStoreTest {
 
@@ -304,6 +308,40 @@ class StateStoreTest {
 			assertEquals(((Set) state2.get("set")).size(), 0, "List should be emptied");
 
 		} catch (InvalidDataTypeException e) {
+			fail("Should not throw anything");
+		}
+	}
+
+	@Test
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	void testGetStateAsJson() {
+		StateStore state = StateStore.getInstance();
+		state.set("string", "a string entry");
+		state.set("long", new Long(4123456789L));
+		state.set("double", new Double(45.2));
+		Map<String, String> map = new HashMap<>();
+		map.put("map-entry", "a map entry value");
+		state.set("map", map);
+		state.addToList("list", "a list entry");
+		state.addToList("list", "another list entry");
+		state.addToSet("set", "a set entry");
+		state.addToSet("set", "another set entry");
+		state.addToSet("set", "yet another set entry");
+		try {
+			String json = state.getStateAsJson();
+			Map<String, Object> state1 = state.getState();
+
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> data = mapper.readValue(json, Map.class);
+
+			assertEquals(data.get("string"), state1.get("string"));
+			assertEquals(data.get("long"), state1.get("long"));
+			assertEquals(data.get("double"), state1.get("double"));
+			assertEquals(data.get("map"), state1.get("map"));
+			assertEquals(((Collection) data.get("list")).size(), 2);
+			assertEquals(((Collection) data.get("set")).size(), 3);
+
+		} catch (InvalidDataTypeException | IOException e) {
 			fail("Should not throw anything");
 		}
 	}
