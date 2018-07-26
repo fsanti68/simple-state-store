@@ -5,6 +5,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.logicalis.la.state.core.InvalidDataTypeException;
 import com.logicalis.la.state.core.StateStore;
 
@@ -26,24 +28,26 @@ public class DroneSample {
 	static String[] randomEvents = { "droneconnectionlost", "dronestoragefull" };
 
 	private long stopTime = 0L;
-	
+
 	public DroneSample() {
 
 		// Busca o estado atualizado a cada 1 segundo
 		Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
 
+			ObjectMapper mapper = new ObjectMapper();
+
 			@Override
 			public void run() {
 				try {
-					String state = StateStore.getInstance().getStateAsJson();
+					String state = mapper.writeValueAsString(StateStore.getInstance().getState());
 					System.out.println(state);
-					
+
 					boolean flightDone = state.contains("missionfinish");
 					if (flightDone) {
 						timer.cancel();
 					}
-				} catch (InvalidDataTypeException e) {
+				} catch (InvalidDataTypeException | JsonProcessingException e) {
 					System.err.println("Invalid data type: " + e.getMessage());
 					e.printStackTrace();
 				}

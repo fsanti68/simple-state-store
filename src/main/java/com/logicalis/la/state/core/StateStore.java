@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /**
  * 
@@ -186,73 +185,5 @@ public class StateStore {
 				((List) value).clear();
 			}
 		}
-	}
-
-	/**
-	 * Retrieves current state's json, resets updates counter and any entry list or
-	 * map.
-	 * 
-	 * @return json document of current state
-	 * @throws InvalidDataTypeException
-	 *                                      in case an inner map has any invalid
-	 *                                      entry class.
-	 */
-	public String getStateAsJson() throws InvalidDataTypeException {
-
-		StringBuilder sb = new StringBuilder();
-		Map<String, Object> map = getState();
-		mapToJson(sb, map);
-		return sb.toString();
-	}
-
-	/**
-	 * Converts a map to a json string.
-	 * 
-	 * @param map
-	 *                map to convert
-	 * @return json string
-	 * @throws InvalidDataTypeException
-	 *                                      in case an inner map has any invalid
-	 *                                      entry class.
-	 */
-	@SuppressWarnings("unchecked")
-	private void mapToJson(StringBuilder sb, Map<String, Object> map) throws InvalidDataTypeException {
-		sb.append("{");
-		boolean first = true;
-		for (String key : map.keySet()) {
-			sb.append(first ? "" : ",").append('\"').append(key).append("\":");
-			Object value = map.get(key);
-			if (Map.class.isInstance(value)) {
-				mapToJson(sb, (Map<String, Object>) value);
-
-			} else if (Set.class.isInstance(value)) {
-				Set<String> events = (Set<String>) value;
-				if (events.isEmpty())
-					sb.append("[]");
-				else
-					sb.append("[\"").append(events.stream().collect(Collectors.joining("\",\""))).append("\"]");
-
-			} else if (List.class.isInstance(value)) {
-				List<String> events = (List<String>) value;
-				if (events.isEmpty())
-					sb.append("[]");
-				else
-					sb.append("[\"").append(events.stream().collect(Collectors.joining("\",\""))).append("\"]");
-
-			} else if (value instanceof String) {
-				sb.append("\"").append(value).append("\"");
-
-			} else if (value instanceof Double || value instanceof Long) {
-				sb.append(value);
-
-			} else {
-				// limiting data types to avoid more complex marshallers, like ObjectMappers
-				throw new InvalidDataTypeException(
-						String.format("Attribute '%s' is a %s: should be Map, List, Set, String, Long or Double.", key,
-								value.getClass().getSimpleName()));
-			}
-			first = false;
-		}
-		sb.append("}");
 	}
 }

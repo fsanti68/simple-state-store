@@ -5,6 +5,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.logicalis.la.state.core.InvalidDataTypeException;
 import com.logicalis.la.state.core.StateStore;
 
@@ -97,11 +99,15 @@ public class Main {
 		Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
 
+			ObjectMapper mapper = new ObjectMapper();
+
 			@Override
 			public void run() {
 				try {
-					System.out.println(StateStore.getInstance().getStateAsJson());
-				} catch (InvalidDataTypeException e) {
+					String json = mapper.writeValueAsString(StateStore.getInstance().getState());
+					System.out.println(json);
+
+				} catch (InvalidDataTypeException | JsonProcessingException e) {
 					System.err.println("Invalid data type: " + e.getMessage());
 					e.printStackTrace();
 				}
