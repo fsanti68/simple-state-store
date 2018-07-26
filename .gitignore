@@ -49,3 +49,5 @@ xml-apis
 xmlunit
 backport-util-concurrent
 commons-cli
+biz
+jline

@@ -155,10 +155,8 @@ public class StateStore {
 
 	/**
 	 * 
-	 * @return an immutable map
+	 * @return a copy of state map (as an immutable map)
 	 * @throws InvalidDataTypeException
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
 	 */
 	@SuppressWarnings("unchecked")
 	public synchronized Map<String, Object> getState() throws InvalidDataTypeException {
