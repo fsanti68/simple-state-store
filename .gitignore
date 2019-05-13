@@ -51,3 +51,6 @@ backport-util-concurrent
 commons-cli
 biz
 jline
+.classpath
+.project
+.settings
